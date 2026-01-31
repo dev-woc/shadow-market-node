@@ -15,6 +15,7 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
   const tabs = [
     { id: 'store', label: 'STOREFRONT' },
     { id: 'orders', label: 'ORDER HISTORY' },
+    { id: 'marketplace', label: 'MARKETPLACE' },
   ];
 
   return (
