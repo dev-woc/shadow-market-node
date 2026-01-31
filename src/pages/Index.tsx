@@ -4,6 +4,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ProductGrid } from '@/components/ProductGrid';
 import { OrderHistory } from '@/components/OrderHistory';
+import { Marketplace } from '@/components/Marketplace';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('store');
@@ -58,6 +59,18 @@ const Index = () => {
               className="h-full"
             >
               <OrderHistory />
+            </motion.div>
+          )}
+
+          {activeTab === 'marketplace' && (
+            <motion.div
+              key="marketplace"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full"
+            >
+              <Marketplace />
             </motion.div>
           )}
         </AnimatePresence>
