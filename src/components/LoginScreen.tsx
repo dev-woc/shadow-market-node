@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, User, ArrowRight, Shuffle } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ export const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +35,16 @@ export const LoginScreen = () => {
 
     setError('');
     setIsLoading(true);
-    // Small delay for effect
+
+    // Show success popup after brief loading
     setTimeout(() => {
-      initializeUser(cleanName);
+      setIsLoading(false);
+      setShowSuccess(true);
+
+      // Transition to main app after showing success
+      setTimeout(() => {
+        initializeUser(cleanName);
+      }, 2000);
     }, 800);
   };
 
@@ -48,6 +56,62 @@ export const LoginScreen = () => {
     const noun = nouns[Math.floor(Math.random() * nouns.length)];
     setUsername(`${adj}_${noun}_${num}`);
   };
+
+  // Success popup overlay
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background terminal-grid crt-scanlines p-4">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-secondary border-2 border-primary rounded-lg p-8 neon-border"
+          >
+            <div className="font-mono text-primary text-sm mb-4">
+              {'>'} AUTHENTICATION SUCCESSFUL
+            </div>
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
+              className="space-y-2"
+            >
+              <div className="text-primary font-mono text-xs tracking-widest">
+                ████████████████████████████████
+              </div>
+              <div className="text-primary font-mono text-lg font-bold neon-text tracking-wider">
+                BASED ACCESS GRANTED
+              </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="text-primary font-mono text-2xl font-bold neon-text"
+              >
+                [ RARE ]
+              </motion.div>
+              <div className="text-primary font-mono text-xs tracking-widest">
+                ████████████████████████████████
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              className="text-muted-foreground font-mono text-xs mt-6"
+            >
+              {'>'} WELCOME, {username.toUpperCase()}
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background terminal-grid crt-scanlines p-4">
