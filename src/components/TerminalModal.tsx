@@ -19,18 +19,23 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
   ]);
   const [currentInput, setCurrentInput] = useState('');
   const [codeMode, setCodeMode] = useState(false);
-  const [userCode, setUserCode] = useState(`// hack_gatekeeper.js
-// Find two items that sum to the target balance
+  const [userCode, setUserCode] = useState(`// --- USER CODE HERE ---
+// inventory = [{name, price, sku}, ...]
+// target = number (balance to match)
+// Return: [item1, item2]
 
-function solve(inventory, target) {
-  // --- USER CODE HERE ---
-  // inventory = [{name, price, sku}, ...]
-  // target = balance to reach
-  // Return: [item1, item2]
+var seen = {};
+for (var i = 0; i < inventory.length; i++) {
+  var item = inventory[i];
+  var complement = Math.round((target - item.price) * 100) / 100;
+  if (seen[complement]) {
+    return [seen[complement], item];
+  }
+  seen[item.price] = item;
+}
+return null;
 
-
-  // --- END USER CODE ---
-}`);
+// --- END USER CODE ---`);
 
   // Open in code mode if requested
   useEffect(() => {
@@ -50,21 +55,18 @@ function solve(inventory, target) {
 
     try {
       // Prepare inventory data for the user's code
-      const inventory = products.map(p => ({
+      const inventoryData = products.map(p => ({
         name: p.name,
         price: p.price,
         sku: p.sku,
         id: p.id,
       }));
 
-      // Create the function from user code
-      const fullCode = `
-        ${userCode}
-        return solve(inventory, target);
-      `;
-
-      const userFunction = new Function('inventory', 'target', fullCode);
-      const result = userFunction(inventory, target);
+      // Create and execute the function
+      // User code is the function body, just needs to return [item1, item2]
+      // eslint-disable-next-line no-new-func
+      const solver = new Function('inventory', 'target', userCode);
+      const result = solver(inventoryData, target);
 
       if (result && Array.isArray(result) && result.length === 2) {
         const [item1, item2] = result;
