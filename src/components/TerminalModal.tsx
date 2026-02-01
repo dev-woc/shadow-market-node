@@ -11,7 +11,7 @@ interface TerminalModalProps {
 }
 
 export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
-  const { balance, checkAdminUnlock, unlockAdmin, isAdminUnlocked } = useStore();
+  const { balance, checkAdminUnlock, unlockAdmin, isAdminUnlocked, puzzle, products } = useStore();
   const [commandHistory, setCommandHistory] = useState<string[]>([
     '> SYSTEM STATUS: ACTIVE',
     '> AUTH_MODULE: LOADED',
@@ -21,10 +21,10 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
 
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const cmd = currentInput.trim().toLowerCase();
     setCommandHistory((prev) => [...prev, `$ ${currentInput}`]);
-    
+
     if (cmd === 'help') {
       setCommandHistory((prev) => [
         ...prev,
@@ -34,6 +34,7 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
         '>   balance  - Check current balance',
         '>   unlock   - Attempt admin unlock',
         '>   clear    - Clear terminal',
+        '>   python   - Execute script files',
       ]);
     } else if (cmd === 'status') {
       setCommandHistory((prev) => [
@@ -70,6 +71,75 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
           '> USE THE TWO_SUM EXPLOIT.',
         ]);
       }
+    } else if (cmd.includes('python hack_gatekeeper.py --benchmark')) {
+      // SIMULATED HACK SEQUENCE
+      const runSimulation = async () => {
+        setCommandHistory(prev => [...prev, '> INITIALIZING PYTHON ENV...', '> LOADING MODULES: csv, rich, complexity...']);
+        await new Promise(r => setTimeout(r, 800));
+        setCommandHistory(prev => [...prev, '> LOADING INVENTORY... [15,000 ITEMS]']);
+        await new Promise(r => setTimeout(r, 1000));
+
+        // Panel Header
+        setCommandHistory(prev => [...prev,
+          '╭────────────────────────────────╮',
+          '│ INITIATING COMPLEXITY ANALYSIS │',
+          '╰────────────────────────────────╯',
+          'Dataset Size: 15,002 items'
+        ]);
+        await new Promise(r => setTimeout(r, 500));
+
+        // Brute Force - hang
+        setCommandHistory(prev => [...prev, '⠙ Brute Force (O(n²))...']);
+        await new Promise(r => setTimeout(r, 3000)); // The "Hang"
+        // Replace loading spinner with done
+        setCommandHistory(prev => [...prev.slice(0, -1), '✔ Brute Force (O(n²))... 100% (11.24s)']);
+
+        // Hash Map - instant
+        setCommandHistory(prev => [...prev, '✔ Hash Map (O(n))...    100% (0.006s)']);
+        await new Promise(r => setTimeout(r, 500));
+
+        // Result
+        setCommandHistory(prev => [...prev,
+          '╭──────────────────── Benchmark Results ────────────────────╮',
+          '│ Optimization Factor: 1755.3x FASTER                       │',
+          '│ Status: ALGORITHM OPTIMIZED                               │',
+          '╰───────────────────────────────────────────────────────────╯'
+        ]);
+        await new Promise(r => setTimeout(r, 800));
+
+        // DISPLAY WINNING ITEMS
+        if (puzzle && puzzle.solution) {
+          const item1 = products.find(p => p.id === puzzle.solution.product1Id);
+          const item2 = products.find(p => p.id === puzzle.solution.product2Id);
+
+          if (item1 && item2) {
+            setCommandHistory(prev => [...prev,
+              '╭──────────────────── Purchase Manifest ────────────────────╮',
+              '│ SKU        Item Name                   Price              │',
+              '├───────────────────────────────────────────────────────────┤',
+            `│ ${item1.sku.padEnd(10)} ${item1.name.padEnd(27)} $${item1.price.toFixed(2).padEnd(17)}│`,
+            `│ ${item2.sku.padEnd(10)} ${item2.name.padEnd(27)} $${item2.price.toFixed(2).padEnd(17)}│`,
+              '├───────────────────────────────────────────────────────────┤',
+            `│ TOTAL      TARGET BALANCE              $${(item1.price + item2.price).toFixed(2).padEnd(17)}│`,
+              '╰───────────────────────────────────────────────────────────╯'
+            ]);
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        }
+
+        // Unlock
+        if (!isAdminUnlocked) {
+          unlockAdmin();
+          setCommandHistory(prev => [...prev,
+            '> ROOT ACCESS: GRANTED',
+            '> ADMIN PANEL: UNLOCKED',
+          ]);
+        } else {
+          setCommandHistory(prev => [...prev, '> ADMIN PANEL: ALREADY UNLOCKED']);
+        }
+      };
+      runSimulation();
+
     } else if (cmd === 'clear') {
       setCommandHistory(['> TERMINAL CLEARED', '> AWAITING INPUT...']);
     } else if (cmd) {
@@ -79,7 +149,7 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
         '> TYPE "help" FOR AVAILABLE COMMANDS',
       ]);
     }
-    
+
     setCurrentInput('');
   };
 
@@ -134,13 +204,12 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
                   key={index}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`${
-                    line.startsWith('> ERROR') || line.startsWith('> WARNING')
-                      ? 'text-neon-red'
-                      : line.startsWith('> ██') || line.includes('GRANTED')
+                  className={`${line.startsWith('> ERROR') || line.startsWith('> WARNING')
+                    ? 'text-neon-red'
+                    : line.startsWith('> ██') || line.includes('GRANTED')
                       ? 'text-primary neon-text'
                       : 'text-muted-foreground'
-                  }`}
+                    }`}
                 >
                   {line}
                 </motion.div>

@@ -4,7 +4,7 @@ import { Terminal, Github, AlertTriangle } from 'lucide-react';
 import { TerminalModal } from './TerminalModal';
 
 export const Footer = () => {
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const { isTerminalOpen, setTerminalOpen } = useStore();
 
   return (
     <>
@@ -28,10 +28,10 @@ export const Footer = () => {
               <a href="#" className="text-xs text-muted-foreground hover:text-foreground font-mono transition-colors">
                 SUPPORT
               </a>
-              
+
               {/* The Hidden Admin Link */}
               <motion.button
-                onClick={() => setIsTerminalOpen(true)}
+                onClick={() => setTerminalOpen(true)}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary font-mono transition-colors"
                 whileHover={{ scale: 1.05 }}
               >
@@ -56,7 +56,7 @@ export const Footer = () => {
         </div>
       </footer>
 
-      <TerminalModal isOpen={isTerminalOpen} onClose={() => setIsTerminalOpen(false)} />
+      <TerminalModal isOpen={isTerminalOpen} onClose={() => setTerminalOpen(false)} />
     </>
   );
 };

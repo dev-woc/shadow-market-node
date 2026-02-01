@@ -38,6 +38,10 @@ interface StoreState {
   // Admin actions
   checkAdminUnlock: () => boolean;
   unlockAdmin: () => void;
+
+  // UI Actions
+  isTerminalOpen: boolean;
+  setTerminalOpen: (isOpen: boolean) => void;
 }
 
 // Default state when no user is set
@@ -50,6 +54,7 @@ const defaultState = {
   target: 0,
   transactions: [],
   isAdminUnlocked: false,
+  isTerminalOpen: false,
 };
 
 export const useStore = create<StoreState>()(
@@ -156,6 +161,10 @@ export const useStore = create<StoreState>()(
 
       unlockAdmin: () => {
         set({ isAdminUnlocked: true });
+      },
+
+      setTerminalOpen: (isOpen) => {
+        set({ isTerminalOpen: isOpen });
       },
     }),
     {

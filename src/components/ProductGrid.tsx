@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Download, Grid, List } from 'lucide-react';
+import { Search, Download, Grid, List, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductCard } from './ProductCard';
 import { useStore } from '@/store/useStore';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 export const ProductGrid = () => {
-  const { products } = useStore();
+  const { products, setTerminalOpen } = useStore();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -26,7 +26,7 @@ export const ProductGrid = () => {
     const headers = ['SKU', 'Name', 'Price', 'Category'];
     const rows = products.map((p) => [p.sku, p.name, p.price.toFixed(2), p.category]);
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
-    
+
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -34,7 +34,7 @@ export const ProductGrid = () => {
     a.download = 'inventory.csv';
     a.click();
     URL.revokeObjectURL(url);
-    
+
     toast({
       title: "DATA EXPORTED",
       description: "inventory.csv downloaded successfully",
@@ -56,7 +56,7 @@ export const ProductGrid = () => {
             className="pl-10 bg-secondary border-border font-mono text-sm"
           />
         </div>
-        
+
         {/* Actions */}
         <div className="flex gap-2">
           <Button
@@ -67,7 +67,15 @@ export const ProductGrid = () => {
           >
             {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
           </Button>
-          
+
+          <Button
+            onClick={() => setTerminalOpen(true)}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono text-xs gap-2 animate-pulse"
+          >
+            <Terminal className="w-4 h-4" />
+            READY TO SLIDE
+          </Button>
+
           <Button
             onClick={exportToCSV}
             className="bg-secondary text-foreground border border-primary hover:bg-primary hover:text-primary-foreground font-mono text-xs gap-2"
