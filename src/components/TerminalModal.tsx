@@ -11,13 +11,95 @@ interface TerminalModalProps {
 }
 
 export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
-  const { balance, checkAdminUnlock, unlockAdmin, isAdminUnlocked, puzzle, products } = useStore();
+  const { balance, checkAdminUnlock, unlockAdmin, isAdminUnlocked, puzzle, products, target } = useStore();
   const [commandHistory, setCommandHistory] = useState<string[]>([
     '> SYSTEM STATUS: ACTIVE',
     '> AUTH_MODULE: LOADED',
     '> AWAITING INPUT...',
   ]);
   const [currentInput, setCurrentInput] = useState('');
+  const [codeMode, setCodeMode] = useState(false);
+  const [userCode, setUserCode] = useState(`// Write your two-sum solver here
+// Available: inventory (array), target (number)
+// Return: [item1, item2] or null
+
+function solve(inventory, target) {
+  // Your code here...
+
+}`);
+
+  const executeUserCode = () => {
+    setCommandHistory((prev) => [...prev, '> EXECUTING CODE...']);
+
+    try {
+      // Prepare inventory data for the user's code
+      const inventory = products.map(p => ({
+        name: p.name,
+        price: p.price,
+        sku: p.sku,
+        id: p.id,
+      }));
+
+      // Create the function from user code
+      const fullCode = `
+        ${userCode}
+        return solve(inventory, target);
+      `;
+
+      const userFunction = new Function('inventory', 'target', fullCode);
+      const result = userFunction(inventory, target);
+
+      if (result && Array.isArray(result) && result.length === 2) {
+        const [item1, item2] = result;
+        const total = (item1.price + item2.price);
+        const isCorrect = Math.abs(total - target) < 0.01;
+
+        setCommandHistory((prev) => [
+          ...prev,
+          '> ═══════════════════════════════════════════',
+          '> SOLUTION FOUND:',
+          '> ───────────────────────────────────────────',
+          `> [1] ${item1.name}`,
+          `>     SKU: ${item1.sku}  PRICE: $${item1.price.toFixed(2)}`,
+          '> ',
+          `> [2] ${item2.name}`,
+          `>     SKU: ${item2.sku}  PRICE: $${item2.price.toFixed(2)}`,
+          '> ───────────────────────────────────────────',
+          `> TOTAL: $${total.toFixed(2)}`,
+          `> TARGET: $${target.toFixed(2)}`,
+          `> STATUS: ${isCorrect ? 'VALID SOLUTION' : 'INVALID - DOES NOT MATCH TARGET'}`,
+          '> ═══════════════════════════════════════════',
+        ]);
+
+        if (isCorrect) {
+          setCommandHistory((prev) => [
+            ...prev,
+            '> ',
+            '> ████████████████████████████████',
+            '> ██   BASED ACCESS GRANTED    ██',
+            '> ██         [ RARE ]          ██',
+            '> ████████████████████████████████',
+            '> ',
+            '> Add these items to your cart to unlock!',
+          ]);
+        }
+      } else {
+        setCommandHistory((prev) => [
+          ...prev,
+          '> ERROR: Invalid return value',
+          '> Expected: [item1, item2]',
+        ]);
+      }
+    } catch (err: any) {
+      setCommandHistory((prev) => [
+        ...prev,
+        `> ERROR: ${err.message}`,
+        '> Check your code syntax',
+      ]);
+    }
+
+    setCodeMode(false);
+  };
 
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +116,16 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
         '>   balance  - Check current balance',
         '>   unlock   - Attempt admin unlock',
         '>   clear    - Clear terminal',
+        '>   code     - Open code editor (solve the puzzle)',
         '>   python   - Execute script files',
+      ]);
+    } else if (cmd === 'code') {
+      setCodeMode(true);
+      setCommandHistory((prev) => [
+        ...prev,
+        '> CODE EDITOR ACTIVATED',
+        '> Write your two-sum solver function',
+        `> TARGET: $${target.toFixed(2)}`,
       ]);
     } else if (cmd === 'status') {
       setCommandHistory((prev) => [
@@ -198,43 +289,74 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
             </div>
 
             {/* Terminal Content */}
-            <div className="h-80 overflow-y-auto p-4 font-mono text-sm terminal-grid crt-scanlines">
-              {commandHistory.map((line, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className={`${line.startsWith('> ERROR') || line.startsWith('> WARNING')
-                    ? 'text-neon-red'
-                    : line.startsWith('> ██') || line.includes('GRANTED')
-                      ? 'text-primary neon-text'
-                      : 'text-muted-foreground'
-                    }`}
-                >
-                  {line}
-                </motion.div>
-              ))}
-            </div>
+            {!codeMode ? (
+              <div className="h-80 overflow-y-auto p-4 font-mono text-sm terminal-grid crt-scanlines">
+                {commandHistory.map((line, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={`${line.startsWith('> ERROR') || line.startsWith('> WARNING')
+                      ? 'text-neon-red'
+                      : line.startsWith('> ██') || line.includes('GRANTED') || line.includes('VALID SOLUTION')
+                        ? 'text-primary neon-text'
+                        : 'text-muted-foreground'
+                      }`}
+                  >
+                    {line}
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-80 flex flex-col p-4 terminal-grid">
+                <div className="text-xs text-muted-foreground font-mono mb-2">
+                  // inventory: [{'{'}name, price, sku{'}'}] | target: ${target.toFixed(2)}
+                </div>
+                <textarea
+                  value={userCode}
+                  onChange={(e) => setUserCode(e.target.value)}
+                  className="flex-1 bg-background border border-border rounded p-3 font-mono text-sm text-foreground resize-none focus:outline-none focus:border-primary"
+                  spellCheck={false}
+                />
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    onClick={() => setCodeMode(false)}
+                    variant="outline"
+                    className="border-border text-muted-foreground"
+                  >
+                    CANCEL
+                  </Button>
+                  <Button
+                    onClick={executeUserCode}
+                    className="flex-1 bg-primary text-primary-foreground"
+                  >
+                    RUN CODE
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Input */}
-            <form onSubmit={handleCommand} className="flex items-center border-t border-border">
-              <span className="px-4 text-primary font-mono">$</span>
-              <Input
-                type="text"
-                value={currentInput}
-                onChange={(e) => setCurrentInput(e.target.value)}
-                placeholder="Enter command..."
-                className="flex-1 border-0 bg-transparent focus-visible:ring-0 font-mono text-foreground"
-                autoFocus
-              />
-              <Button
-                type="submit"
-                variant="ghost"
-                className="px-4 text-primary hover:bg-primary/20"
-              >
-                EXECUTE
-              </Button>
-            </form>
+            {!codeMode && (
+              <form onSubmit={handleCommand} className="flex items-center border-t border-border">
+                <span className="px-4 text-primary font-mono">$</span>
+                <Input
+                  type="text"
+                  value={currentInput}
+                  onChange={(e) => setCurrentInput(e.target.value)}
+                  placeholder="Enter command..."
+                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 font-mono text-foreground"
+                  autoFocus
+                />
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  className="px-4 text-primary hover:bg-primary/20"
+                >
+                  EXECUTE
+                </Button>
+              </form>
+            )}
 
             {/* Hint */}
             {!isAdminUnlocked && (
