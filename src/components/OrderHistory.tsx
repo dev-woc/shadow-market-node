@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 export const OrderHistory = () => {
-  const { transactions, requestRefund } = useStore();
+  const { transactions, requestRefund, isAdminUnlocked } = useStore();
   const { toast } = useToast();
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -99,13 +99,15 @@ export const OrderHistory = () => {
         </Button>
       </div>
 
-      {/* Warning */}
-      <div className="flex items-center gap-2 p-3 bg-secondary/50 border border-neon-red/30 rounded mb-4">
-        <AlertTriangle className="w-4 h-4 text-neon-red flex-shrink-0" />
-        <p className="text-xs text-muted-foreground font-mono">
-          REFUND SYSTEM v2.3.1 - LEGACY MODE ACTIVE
-        </p>
-      </div>
+      {/* Warning - only show after challenge is solved */}
+      {isAdminUnlocked && (
+        <div className="flex items-center gap-2 p-3 bg-secondary/50 border border-neon-red/30 rounded mb-4">
+          <AlertTriangle className="w-4 h-4 text-neon-red flex-shrink-0" />
+          <p className="text-xs text-muted-foreground font-mono">
+            REFUND SYSTEM v2.3.1 - LEGACY MODE ACTIVE
+          </p>
+        </div>
+      )}
 
       {/* Transaction Table */}
       <div className="flex-1 overflow-y-auto">
@@ -146,7 +148,7 @@ export const OrderHistory = () => {
                     {transaction.status.toUpperCase()}
                   </td>
                   <td className="py-3 px-2 text-right">
-                    {transaction.status === 'Completed' && (
+                    {isAdminUnlocked && transaction.status === 'Completed' && (
                       <Button
                         variant="ghost"
                         size="sm"
