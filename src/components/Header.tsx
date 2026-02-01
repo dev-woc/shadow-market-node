@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Gauge, Menu, X } from 'lucide-react';
+import { Gauge, Menu, X, User, LogOut } from 'lucide-react';
 import { BalanceDisplay } from './BalanceDisplay';
 import { Cart } from './Cart';
+import { useStore } from '@/store/useStore';
 
 interface HeaderProps {
   activeTab: string;
@@ -11,6 +12,13 @@ interface HeaderProps {
 
 export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { userSeed, resetUser } = useStore();
+
+  const handleLogout = () => {
+    if (confirm('Reset your session? Your progress will be lost.')) {
+      resetUser();
+    }
+  };
 
   const tabs = [
     { id: 'store', label: 'STOREFRONT' },
@@ -62,6 +70,21 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
 
           {/* Right Section */}
           <div className="flex items-center gap-4">
+            {/* User Info */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-secondary rounded border border-border">
+              <User className="w-3 h-3 text-primary" />
+              <span className="font-mono text-xs text-muted-foreground">
+                {userSeed}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="p-1 hover:bg-background rounded transition-colors ml-1"
+                title="Logout"
+              >
+                <LogOut className="w-3 h-3 text-muted-foreground hover:text-neon-red" />
+              </button>
+            </div>
+
             <div className="hidden sm:block">
               <BalanceDisplay />
             </div>

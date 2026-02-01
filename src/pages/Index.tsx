@@ -1,18 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ProductGrid } from '@/components/ProductGrid';
 import { OrderHistory } from '@/components/OrderHistory';
 import { Marketplace } from '@/components/Marketplace';
+import { LoginScreen } from '@/components/LoginScreen';
+import { useStore } from '@/store/useStore';
+import { generatePuzzle } from '@/lib/puzzleGenerator';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('store');
+  const { userSeed, puzzle, initializeUser, target } = useStore();
+
+  // Regenerate puzzle from seed on mount (for persistence)
+  useEffect(() => {
+    if (userSeed && !puzzle) {
+      // Re-hydrate puzzle from stored seed
+      const regeneratedPuzzle = generatePuzzle(userSeed);
+      useStore.setState({
+        puzzle: regeneratedPuzzle,
+        products: regeneratedPuzzle.products,
+        target: regeneratedPuzzle.target,
+      });
+    }
+  }, [userSeed, puzzle]);
+
+  // Show login screen if no user
+  if (!userSeed) {
+    return <LoginScreen />;
+  }
+
+  // Show loading while puzzle regenerates
+  if (!puzzle) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground font-mono">LOADING...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background terminal-grid crt-scanlines">
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
-      
+
       <main className="flex-1 container mx-auto px-4 py-6">
         <AnimatePresence mode="wait">
           {activeTab === 'store' && (
@@ -37,7 +68,7 @@ const Index = () => {
                 </p>
                 <div className="flex items-center gap-4 mt-4 text-xs font-mono">
                   <span className="text-muted-foreground">
-                    TARGET: <span className="text-primary">$1,000.00</span>
+                    TARGET: <span className="text-primary">${target.toFixed(2)}</span>
                   </span>
                   <span className="text-muted-foreground">|</span>
                   <span className="text-muted-foreground">
@@ -45,7 +76,7 @@ const Index = () => {
                   </span>
                 </div>
               </div>
-              
+
               <ProductGrid />
             </motion.div>
           )}
