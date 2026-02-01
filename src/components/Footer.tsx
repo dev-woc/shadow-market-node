@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Terminal, Github, AlertTriangle } from 'lucide-react';
 import { TerminalModal } from './TerminalModal';
+import { useStore } from '@/store/useStore';
 
 export const Footer = () => {
   const { isTerminalOpen, setTerminalOpen } = useStore();
