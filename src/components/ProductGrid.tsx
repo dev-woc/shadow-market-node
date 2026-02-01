@@ -69,7 +69,7 @@ export const ProductGrid = () => {
           </Button>
 
           <Button
-            onClick={() => setTerminalOpen(true)}
+            onClick={() => setTerminalOpen(true, true)}
             className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono text-xs gap-2 animate-pulse"
           >
             <Terminal className="w-4 h-4" />

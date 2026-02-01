@@ -41,7 +41,8 @@ interface StoreState {
 
   // UI Actions
   isTerminalOpen: boolean;
-  setTerminalOpen: (isOpen: boolean) => void;
+  terminalCodeMode: boolean;
+  setTerminalOpen: (isOpen: boolean, codeMode?: boolean) => void;
 }
 
 // Default state when no user is set
@@ -55,6 +56,7 @@ const defaultState = {
   transactions: [],
   isAdminUnlocked: false,
   isTerminalOpen: false,
+  terminalCodeMode: false,
 };
 
 export const useStore = create<StoreState>()(
@@ -163,8 +165,8 @@ export const useStore = create<StoreState>()(
         set({ isAdminUnlocked: true });
       },
 
-      setTerminalOpen: (isOpen) => {
-        set({ isTerminalOpen: isOpen });
+      setTerminalOpen: (isOpen, codeMode = false) => {
+        set({ isTerminalOpen: isOpen, terminalCodeMode: codeMode });
       },
     }),
     {

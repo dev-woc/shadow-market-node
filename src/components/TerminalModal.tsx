@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, X, Lock, Unlock, AlertCircle } from 'lucide-react';
 import { useStore } from '@/store/useStore';
@@ -11,7 +11,7 @@ interface TerminalModalProps {
 }
 
 export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
-  const { balance, checkAdminUnlock, unlockAdmin, isAdminUnlocked, puzzle, products, target } = useStore();
+  const { balance, checkAdminUnlock, unlockAdmin, isAdminUnlocked, puzzle, products, target, terminalCodeMode } = useStore();
   const [commandHistory, setCommandHistory] = useState<string[]>([
     '> SYSTEM STATUS: ACTIVE',
     '> AUTH_MODULE: LOADED',
@@ -31,6 +31,19 @@ function solve(inventory, target) {
 
   // --- END USER CODE ---
 }`);
+
+  // Open in code mode if requested
+  useEffect(() => {
+    if (isOpen && terminalCodeMode) {
+      setCodeMode(true);
+      setCommandHistory((prev) => [
+        ...prev,
+        '> CODE EDITOR ACTIVATED',
+        '> Write your two-sum solver function',
+        `> TARGET: $${target.toFixed(2)}`,
+      ]);
+    }
+  }, [isOpen, terminalCodeMode, target]);
 
   const executeUserCode = () => {
     setCommandHistory((prev) => [...prev, '> EXECUTING CODE...']);
