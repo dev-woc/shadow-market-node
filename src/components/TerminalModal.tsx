@@ -55,7 +55,7 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
         setCommandHistory((prev) => [
           ...prev,
           '> ████████████████████████████████',
-          '> ██   ADMIN ACCESS GRANTED    ██',
+          '> ██   BASED ACCESS GRANTED    ██',
           '> ██         [ RARE ]          ██',
           '> ████████████████████████████████',
           '> TWO_SUM VALIDATION: PASSED',
