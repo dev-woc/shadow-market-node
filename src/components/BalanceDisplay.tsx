@@ -24,7 +24,7 @@ export const BalanceDisplay = () => {
       
       <div className="flex flex-col">
         <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-          BALANCE
+          {isZero ? '[ RARE ]' : 'BALANCE'}
         </span>
         <motion.span
           key={balance}
@@ -42,7 +42,7 @@ export const BalanceDisplay = () => {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="ml-1"
+          className="ml-1 flex items-center gap-1"
         >
           <TrendingUp className="w-4 h-4 text-primary" />
         </motion.div>

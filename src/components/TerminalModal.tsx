@@ -54,11 +54,12 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
         unlockAdmin();
         setCommandHistory((prev) => [
           ...prev,
-          '> ████████████████████████████',
-          '> ██ ADMIN ACCESS GRANTED ██',
-          '> ████████████████████████████',
+          '> ████████████████████████████████',
+          '> ██   ADMIN ACCESS GRANTED    ██',
+          '> ██         [ RARE ]          ██',
+          '> ████████████████████████████████',
           '> TWO_SUM VALIDATION: PASSED',
-          '> WELCOME, OPERATOR.',
+          '> YOU ARE SPECIAL, OPERATOR.',
         ]);
       } else {
         setCommandHistory((prev) => [
