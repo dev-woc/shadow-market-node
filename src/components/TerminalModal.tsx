@@ -19,13 +19,17 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
   ]);
   const [currentInput, setCurrentInput] = useState('');
   const [codeMode, setCodeMode] = useState(false);
-  const [userCode, setUserCode] = useState(`// Write your two-sum solver here
-// Available: inventory (array), target (number)
-// Return: [item1, item2] or null
+  const [userCode, setUserCode] = useState(`// hack_gatekeeper.js
+// Find two items that sum to the target balance
 
 function solve(inventory, target) {
-  // Your code here...
+  // --- USER CODE HERE ---
+  // inventory = [{name, price, sku}, ...]
+  // target = balance to reach
+  // Return: [item1, item2]
 
+
+  // --- END USER CODE ---
 }`);
 
   const executeUserCode = () => {
