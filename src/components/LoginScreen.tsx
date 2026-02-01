@@ -5,19 +5,38 @@ import { useStore } from '@/store/useStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
+// Generic names that aren't special enough
+const BORING_NAMES = [
+  'admin', 'user', 'test', 'guest', 'root', 'administrator',
+  'player', 'name', 'username', 'login', 'account', 'me',
+  'player1', 'user1', 'test1', 'abc', '123', 'password',
+  'asdf', 'qwerty', 'default', 'anonymous', 'nobody',
+  'john', 'jane', 'bob', 'alice', 'foo', 'bar', 'example'
+];
+
 export const LoginScreen = () => {
   const { initializeUser } = useStore();
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) return;
 
+    const cleanName = username.trim().toLowerCase();
+
+    // Check if the name is too generic
+    if (BORING_NAMES.includes(cleanName) || cleanName.length < 3) {
+      setError('SORRY, NOT SPECIAL');
+      return;
+    }
+
+    setError('');
     setIsLoading(true);
     // Small delay for effect
     setTimeout(() => {
-      initializeUser(username.trim().toLowerCase());
+      initializeUser(cleanName);
     }, 800);
   };
 
@@ -66,13 +85,27 @@ export const LoginScreen = () => {
                 <Input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setError('');
+                  }}
                   placeholder="enter_username"
-                  className="pl-10 bg-background border-border font-mono"
+                  className={`pl-10 bg-background border-border font-mono ${error ? 'border-neon-red' : ''}`}
                   disabled={isLoading}
                   autoFocus
                 />
               </div>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 p-3 bg-neon-red/10 border border-neon-red/50 rounded"
+                >
+                  <span className="text-neon-red font-mono text-sm tracking-widest">
+                    [ {error} ]
+                  </span>
+                </motion.div>
+              )}
             </div>
 
             <div className="flex gap-2">
