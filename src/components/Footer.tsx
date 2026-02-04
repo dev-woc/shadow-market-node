@@ -1,11 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Terminal, Github, AlertTriangle } from 'lucide-react';
+import { Terminal, Github, AlertTriangle, Glasses } from 'lucide-react';
 import { TerminalModal } from './TerminalModal';
+import { VRAdminConsole } from './VRAdminConsole';
 import { useStore } from '@/store/useStore';
 
 export const Footer = () => {
-  const { isTerminalOpen, setTerminalOpen } = useStore();
+  const { isTerminalOpen, setTerminalOpen, isAdminUnlocked, unlockAdmin } = useStore();
+  const [isVROpen, setIsVROpen] = useState(false);
+
+  // Dev mode: auto-unlock with ?dev=true
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('dev') === 'true' && !isAdminUnlocked) {
+      unlockAdmin();
+    }
+  }, [isAdminUnlocked, unlockAdmin]);
 
   return (
     <>
@@ -39,6 +49,20 @@ export const Footer = () => {
                 <Terminal className="w-3 h-3" />
                 SYSTEM STATUS
               </motion.button>
+
+              {/* VR Admin Console - only shows when admin unlocked */}
+              {isAdminUnlocked && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  onClick={() => setIsVROpen(true)}
+                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary font-mono transition-colors neon-text"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Glasses className="w-3 h-3" />
+                  VR CONSOLE
+                </motion.button>
+              )}
             </div>
 
             {/* Warning */}
@@ -58,6 +82,7 @@ export const Footer = () => {
       </footer>
 
       <TerminalModal isOpen={isTerminalOpen} onClose={() => setTerminalOpen(false)} />
+      <VRAdminConsole isOpen={isVROpen} onClose={() => setIsVROpen(false)} />
     </>
   );
 };

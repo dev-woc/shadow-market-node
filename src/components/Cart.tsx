@@ -22,10 +22,11 @@ export const Cart = () => {
       return;
     }
 
+    const itemCount = cart.length;
     checkout();
     toast({
       title: "ORDER CONFIRMED",
-      description: `${cart.length} items purchased successfully`,
+      description: `${itemCount} items purchased successfully`,
     });
     setIsOpen(false);
   };
@@ -71,7 +72,7 @@ export const Cart = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25 }}
-              className="fixed right-0 top-0 h-full w-full max-w-md bg-background border-l border-border z-50 flex flex-col"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-background border-l border-border z-50 flex flex-col"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
@@ -122,7 +123,7 @@ export const Cart = () => {
               </div>
 
               {/* Footer */}
-              <div className="border-t border-border p-4 space-y-4">
+              <div className="border-t border-border p-4 pb-8 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground font-mono text-sm">SUBTOTAL</span>
                   <span className="font-mono text-lg text-primary">${cartTotal.toFixed(2)}</span>

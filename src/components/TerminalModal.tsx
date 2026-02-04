@@ -91,6 +91,7 @@ return null;
         ]);
 
         if (isCorrect) {
+          unlockAdmin();
           setCommandHistory((prev) => [
             ...prev,
             '> ',
@@ -99,7 +100,7 @@ return null;
             '> ██         [ RARE ]          ██',
             '> ████████████████████████████████',
             '> ',
-            '> Add these items to your cart to unlock!',
+            '> VR CONSOLE UNLOCKED IN FOOTER!',
           ]);
         }
       } else {
