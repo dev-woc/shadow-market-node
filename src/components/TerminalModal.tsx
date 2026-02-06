@@ -356,19 +356,6 @@ return null;
               </div>
             )}
 
-            {/* Input */}
-            {!codeMode && (
-              <form onSubmit={handleCommand} className="flex items-center border-t border-border">
-                <span className="px-4 text-primary font-mono">$</span>
-                <Input
-                  type="text"
-                  value={currentInput}
-                  onChange={(e) => setCurrentInput(e.target.value)}
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 font-mono text-foreground"
-                  autoFocus
-                />
-              </form>
-            )}
 
             {/* Hint */}
             {!isAdminUnlocked && (
