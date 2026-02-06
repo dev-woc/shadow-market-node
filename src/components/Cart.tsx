@@ -82,7 +82,7 @@ export const Cart = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-background border-l border-border z-50 flex flex-col"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-background border-l border-border z-50 flex flex-col"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
@@ -99,7 +99,7 @@ export const Cart = () => {
               </div>
 
               {/* Cart Items */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
                 {cart.length === 0 ? (
                   <div className="text-center py-12">
                     <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -116,18 +116,18 @@ export const Cart = () => {
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-foreground font-medium truncate">{item.name}</p>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mt-1">
                           <p className="text-xs text-muted-foreground font-mono">{item.sku}</p>
                           {item.quantity > 1 && (
                             <span className="text-xs font-mono text-primary/70">×{item.quantity}</span>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-primary">${(item.price * item.quantity).toFixed(2)}</span>
+                      <div className="flex items-center gap-3 ml-3 shrink-0">
+                        <span className="font-mono text-sm text-primary">${(item.price * item.quantity).toFixed(2)}</span>
                         <button
                           onClick={() => removeFromCart(item.id)}
-                          className="p-1 hover:bg-neon-red/20 rounded transition-colors"
+                          className="p-1.5 hover:bg-neon-red/20 rounded transition-colors"
                         >
                           <Trash2 className="w-4 h-4 text-neon-red" />
                         </button>
@@ -138,12 +138,12 @@ export const Cart = () => {
               </div>
 
               {/* Footer */}
-              <div className="border-t border-border p-4 pb-8 space-y-4">
+              <div className="border-t border-border p-4 space-y-3 shrink-0">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground font-mono text-sm">SUBTOTAL</span>
                   <span className="font-mono text-lg text-primary">${cartTotal.toFixed(2)}</span>
                 </div>
-                
+
                 <div className="flex gap-2">
                   {cart.length > 0 && (
                     <Button

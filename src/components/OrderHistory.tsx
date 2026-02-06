@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 export const OrderHistory = () => {
-  const { transactions, requestRefund, isAdminUnlocked, balance } = useStore();
+  const { transactions, requestRefund, isAdminUnlocked, hasDepletedBalance } = useStore();
   const { toast } = useToast();
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -148,7 +148,7 @@ export const OrderHistory = () => {
                     {transaction.status.toUpperCase()}
                   </td>
                   <td className="py-3 px-2 text-right">
-                    {isAdminUnlocked && balance === 0 && transaction.status === 'Completed' && (
+                    {isAdminUnlocked && hasDepletedBalance && transaction.status === 'Completed' && (
                       <Button
                         variant="ghost"
                         size="sm"

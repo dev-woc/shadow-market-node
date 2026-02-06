@@ -21,6 +21,7 @@ interface StoreState {
   target: number;
   transactions: Transaction[];
   isAdminUnlocked: boolean;
+  hasDepletedBalance: boolean;
 
   // User actions
   initializeUser: (seed: string) => void;
@@ -55,6 +56,7 @@ const defaultState = {
   target: 0,
   transactions: [],
   isAdminUnlocked: false,
+  hasDepletedBalance: false,
   isTerminalOpen: false,
   terminalCodeMode: false,
 };
@@ -162,7 +164,7 @@ export const useStore = create<StoreState>()(
       },
 
       unlockAdmin: () => {
-        set({ isAdminUnlocked: true });
+        set({ isAdminUnlocked: true, hasDepletedBalance: true });
       },
 
       setTerminalOpen: (isOpen, codeMode = false) => {
@@ -177,6 +179,7 @@ export const useStore = create<StoreState>()(
         balance: state.balance,
         transactions: state.transactions,
         isAdminUnlocked: state.isAdminUnlocked,
+        hasDepletedBalance: state.hasDepletedBalance,
       }),
     }
   )
