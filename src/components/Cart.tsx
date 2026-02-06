@@ -63,7 +63,7 @@ export const Cart = () => {
         )}
       </motion.button>
 
-      {/* Cart Drawer */}
+      {/* Cart Modal */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -73,22 +73,27 @@ export const Cart = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/60 z-40"
+              className="fixed inset-0 bg-black/70 z-[100]"
             />
 
-            {/* Drawer */}
+            {/* Modal */}
             <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-background border-l border-border z-50 flex flex-col"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed inset-4 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-xl sm:max-h-[80vh] bg-background border border-border rounded-lg z-[101] flex flex-col shadow-2xl shadow-primary/10"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5 text-primary" />
                   <h2 className="font-display font-bold text-lg text-foreground">CART</h2>
+                  {cart.length > 0 && (
+                    <span className="font-mono text-xs text-muted-foreground ml-1">
+                      ({cart.length} {cart.length === 1 ? 'ITEM' : 'ITEMS'})
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -109,8 +114,8 @@ export const Cart = () => {
                   cart.map((item) => (
                     <motion.div
                       key={item.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                       className="flex items-center justify-between p-3 bg-secondary rounded border border-border"
                     >
@@ -119,7 +124,7 @@ export const Cart = () => {
                         <div className="flex items-center gap-2 mt-1">
                           <p className="text-xs text-muted-foreground font-mono">{item.sku}</p>
                           {item.quantity > 1 && (
-                            <span className="text-xs font-mono text-primary/70">×{item.quantity}</span>
+                            <span className="text-xs font-mono text-primary/70">x{item.quantity}</span>
                           )}
                         </div>
                       </div>
