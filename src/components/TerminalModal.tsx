@@ -364,17 +364,9 @@ return null;
                   type="text"
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
-                  placeholder="Enter command..."
                   className="flex-1 border-0 bg-transparent focus-visible:ring-0 font-mono text-foreground"
                   autoFocus
                 />
-                <Button
-                  type="submit"
-                  variant="ghost"
-                  className="px-4 text-primary hover:bg-primary/20"
-                >
-                  EXECUTE
-                </Button>
               </form>
             )}
 

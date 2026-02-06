@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 export const Cart = () => {
-  const { cart, balance, removeFromCart, clearCart, checkout } = useStore();
+  const { cart, balance, removeFromCart, clearCart, checkout, checkAdminUnlock, unlockAdmin } = useStore();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -24,10 +24,20 @@ export const Cart = () => {
 
     const itemCount = cart.length;
     checkout();
-    toast({
-      title: "ORDER CONFIRMED",
-      description: `${itemCount} items purchased successfully`,
-    });
+
+    // Check if puzzle is solved (balance depleted to $0)
+    if (checkAdminUnlock()) {
+      unlockAdmin();
+      toast({
+        title: "SYSTEM BREACH DETECTED",
+        description: "Balance depleted. Refund system now accessible in Order History.",
+      });
+    } else {
+      toast({
+        title: "ORDER CONFIRMED",
+        description: `${itemCount} items purchased successfully`,
+      });
+    }
     setIsOpen(false);
   };
 
@@ -104,12 +114,17 @@ export const Cart = () => {
                       exit={{ opacity: 0, x: -20 }}
                       className="flex items-center justify-between p-3 bg-secondary rounded border border-border"
                     >
-                      <div className="flex-1">
-                        <p className="text-sm text-foreground font-medium">{item.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{item.sku}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground font-medium truncate">{item.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground font-mono">{item.sku}</p>
+                          {item.quantity > 1 && (
+                            <span className="text-xs font-mono text-primary/70">×{item.quantity}</span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-mono text-primary">${item.price.toFixed(2)}</span>
+                        <span className="font-mono text-primary">${(item.price * item.quantity).toFixed(2)}</span>
                         <button
                           onClick={() => removeFromCart(item.id)}
                           className="p-1 hover:bg-neon-red/20 rounded transition-colors"
