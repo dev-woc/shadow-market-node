@@ -7,12 +7,17 @@ describe("useStore", () => {
     useStore.setState({
       userSeed: null,
       puzzle: null,
+      marketPuzzle: null,
+      votePuzzle: null,
       products: [],
       cart: [],
       balance: 1000,
       target: 1000,
       transactions: [],
       isAdminUnlocked: false,
+      hasDepletedBalance: false,
+      hasWashedCredits: false,
+      isVerifiedSeller: false,
       isTerminalOpen: false,
       terminalCodeMode: false,
     });

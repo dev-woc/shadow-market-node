@@ -1,15 +1,39 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Download, Activity, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, Download, Activity, Zap, CheckCircle2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { generateMarketData, MarketDataPoint } from '@/data/marketData';
+import { verifyWashSolution, WashResult } from '@/lib/marketPuzzleGenerator';
+import { useStore } from '@/store/useStore';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+const washFeedbackMessage = (result: WashResult): string => {
+  switch (result.status) {
+    case 'buy-price-not-found':
+      return 'BUY PRICE NOT FOUND IN HISTORY';
+    case 'sell-price-not-found':
+      return 'SELL PRICE NOT FOUND IN HISTORY';
+    case 'wrong-order':
+      return 'SELL MUST OCCUR AFTER BUY — CHECK CHRONOLOGICAL ORDER';
+    case 'not-optimal':
+      return `$${result.profit.toFixed(2)} PROFIT — NOT THE OPTIMAL TRADE`;
+    case 'success':
+      return 'OPTIMAL TRADE EXECUTED';
+  }
+};
 
 export const Marketplace = () => {
+  const { marketPuzzle, hasWashedCredits, completeWash } = useStore();
+  const { toast } = useToast();
   const [marketData, setMarketData] = useState<MarketDataPoint[]>([]);
   const [currentPrice, setCurrentPrice] = useState(0);
   const [priceChange, setPriceChange] = useState(0);
   const [isLive, setIsLive] = useState(true);
+  const [buyPriceInput, setBuyPriceInput] = useState('');
+  const [sellPriceInput, setSellPriceInput] = useState('');
+  const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => {
     const data = generateMarketData();
@@ -50,10 +74,11 @@ export const Marketplace = () => {
   }, [isLive]);
 
   const handleDownloadHistory = () => {
-    // Shuffle the data to make it harder to visually spot the buy/sell points
-    const shuffledData = [...marketData].sort(() => Math.random() - 0.5);
-    
-    const blob = new Blob([JSON.stringify(shuffledData, null, 2)], { type: 'application/json' });
+    if (!marketPuzzle) return;
+
+    // Chronological order matters here — the trade must be buy-before-sell,
+    // so unlike the old cosmetic export, this data is never shuffled.
+    const blob = new Blob([JSON.stringify(marketPuzzle.priceHistory, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -62,6 +87,29 @@ export const Marketplace = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleSubmitTrade = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!marketPuzzle) return;
+
+    const buy = parseFloat(buyPriceInput);
+    const sell = parseFloat(sellPriceInput);
+    if (isNaN(buy) || isNaN(sell)) {
+      setFeedback({ ok: false, message: 'ENTER VALID BUY AND SELL PRICES' });
+      return;
+    }
+
+    const result = verifyWashSolution(marketPuzzle, buy, sell);
+    setFeedback({ ok: result.status === 'success', message: washFeedbackMessage(result) });
+
+    if (result.status === 'success') {
+      completeWash(result.profit);
+      toast({
+        title: 'CREDITS LAUNDERED',
+        description: `$${result.profit.toFixed(2)} profit credited to balance`,
+      });
+    }
   };
 
   // Format data for chart display (show fewer points for performance)
@@ -76,6 +124,8 @@ export const Marketplace = () => {
 
   const minPrice = Math.min(...marketData.map(d => d.price));
   const maxPrice = Math.max(...marketData.map(d => d.price));
+
+  if (!marketPuzzle) return null;
 
   return (
     <div className="space-y-6">
@@ -224,11 +274,71 @@ export const Marketplace = () => {
           {/* Hint */}
           <div className="mt-4 p-3 bg-neon-red/10 border border-neon-red/30 rounded-lg">
             <p className="text-xs text-neon-red font-mono">
-              ⚠ INTEL: Historical data suggests optimal entry/exit points exist. 
+              ⚠ INTEL: Historical data suggests optimal entry/exit points exist.
               Download and analyze to find the maximum profit window.
             </p>
           </div>
         </div>
+      </motion.div>
+
+      {/* The Wash — execute the laundering trade */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card border border-border rounded-lg p-6"
+      >
+        <h3 className="font-display font-bold text-lg text-foreground mb-1">THE WASH</h3>
+        <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider mb-4">
+          Execute one perfect trade to launder the dirty credits
+        </p>
+
+        {hasWashedCredits ? (
+          <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+            <CheckCircle2 className="w-4 h-4 text-primary" />
+            <span className="text-sm font-mono text-primary neon-text">
+              TRADE EXECUTED — CREDITS LAUNDERED
+            </span>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmitTrade} className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+                  Buy Price
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={buyPriceInput}
+                  onChange={(e) => setBuyPriceInput(e.target.value)}
+                  placeholder="0.00"
+                  className="font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+                  Sell Price
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={sellPriceInput}
+                  onChange={(e) => setSellPriceInput(e.target.value)}
+                  placeholder="0.00"
+                  className="font-mono"
+                />
+              </div>
+            </div>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground font-mono">
+              EXECUTE TRADE
+            </Button>
+            {feedback && (
+              <p className={`text-xs font-mono ${feedback.ok ? 'text-primary neon-text' : 'text-neon-red'}`}>
+                {feedback.ok ? '✔' : '⚠'} {feedback.message}
+              </p>
+            )}
+          </form>
+        )}
       </motion.div>
     </div>
   );

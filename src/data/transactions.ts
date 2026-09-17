@@ -5,7 +5,7 @@ export interface Transaction {
   orderId: string;
   productName: string;
   amount: number;
-  status: 'Completed' | 'Pending' | 'Refunded';
+  status: 'Completed' | 'Pending' | 'Refunded' | 'Laundered';
   date: string;
 }
 

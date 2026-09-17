@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Gauge, Menu, X, User, LogOut } from 'lucide-react';
+import { Gauge, Menu, X, User, LogOut, Lock } from 'lucide-react';
 import { BalanceDisplay } from './BalanceDisplay';
 import { Cart } from './Cart';
 import { useStore } from '@/store/useStore';
+import { GUIDED_MODE } from '@/lib/config';
 
 interface HeaderProps {
   activeTab: string;
@@ -12,7 +13,7 @@ interface HeaderProps {
 
 export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { userSeed, resetUser } = useStore();
+  const { userSeed, resetUser, isAdminUnlocked, hasWashedCredits } = useStore();
 
   const handleLogout = () => {
     if (confirm('Reset your session? Your progress will be lost.')) {
@@ -24,7 +25,17 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
     { id: 'store', label: 'STOREFRONT' },
     { id: 'orders', label: 'ORDER HISTORY' },
     { id: 'marketplace', label: 'MARKETPLACE' },
+    { id: 'seller', label: 'SELLER PROGRAM' },
   ];
+
+  // GUIDED_MODE is off by default (see src/lib/config.ts) — when enabled, tabs
+  // unlock in narrative order instead of being open from the start.
+  const isTabLocked = (tabId: string) => {
+    if (!GUIDED_MODE) return false;
+    if (tabId === 'marketplace') return !isAdminUnlocked;
+    if (tabId === 'seller') return !hasWashedCredits;
+    return false;
+  };
 
   return (
     <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
@@ -51,21 +62,28 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            {tabs.map((tab) => (
-              <motion.button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={`px-4 py-2 font-mono text-sm rounded transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {tab.label}
-              </motion.button>
-            ))}
+            {tabs.map((tab) => {
+              const locked = isTabLocked(tab.id);
+              return (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => !locked && onTabChange(tab.id)}
+                  disabled={locked}
+                  className={`px-4 py-2 font-mono text-sm rounded transition-colors ${
+                    locked
+                      ? 'text-muted-foreground opacity-50 cursor-not-allowed'
+                      : activeTab === tab.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                  whileHover={locked ? undefined : { scale: 1.02 }}
+                  whileTap={locked ? undefined : { scale: 0.98 }}
+                >
+                  {locked && <Lock className="w-3 h-3 inline mr-1" />}
+                  {tab.label}
+                </motion.button>
+              );
+            })}
           </nav>
 
           {/* Right Section */}
@@ -117,22 +135,30 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden pb-4 space-y-1"
           >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  onTabChange(tab.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-4 py-3 font-mono text-sm rounded transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const locked = isTabLocked(tab.id);
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    if (locked) return;
+                    onTabChange(tab.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  disabled={locked}
+                  className={`w-full text-left px-4 py-3 font-mono text-sm rounded transition-colors ${
+                    locked
+                      ? 'text-muted-foreground opacity-50 cursor-not-allowed'
+                      : activeTab === tab.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  {locked && <Lock className="w-3 h-3 inline mr-1" />}
+                  {tab.label}
+                </button>
+              );
+            })}
           </motion.nav>
         )}
       </div>

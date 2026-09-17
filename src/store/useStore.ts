@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import { Product } from '@/data/products';
 import { Transaction, generateInitialTransactions } from '@/data/transactions';
 import { generatePuzzle, PuzzleConfig } from '@/lib/puzzleGenerator';
+import { generateMarketPuzzle, MarketPuzzle } from '@/lib/marketPuzzleGenerator';
+import { generateVotePuzzle, VotePuzzleConfig } from '@/lib/votePuzzleGenerator';
 import { v4 as uuidv4 } from 'uuid';
 
 interface CartItem extends Product {
@@ -13,6 +15,8 @@ interface StoreState {
   // User & Puzzle
   userSeed: string | null;
   puzzle: PuzzleConfig | null;
+  marketPuzzle: MarketPuzzle | null;
+  votePuzzle: VotePuzzleConfig | null;
 
   // Store data
   products: Product[];
@@ -22,6 +26,8 @@ interface StoreState {
   transactions: Transaction[];
   isAdminUnlocked: boolean;
   hasDepletedBalance: boolean;
+  hasWashedCredits: boolean;
+  isVerifiedSeller: boolean;
 
   // User actions
   initializeUser: (seed: string) => void;
@@ -35,10 +41,14 @@ interface StoreState {
 
   // Transaction actions
   requestRefund: (transaction: Transaction) => void;
+  completeWash: (profit: number) => void;
 
   // Admin actions
   checkAdminUnlock: () => boolean;
   unlockAdmin: () => void;
+
+  // Seller Program actions
+  verifySeller: () => void;
 
   // UI Actions
   isTerminalOpen: boolean;
@@ -50,6 +60,8 @@ interface StoreState {
 const defaultState = {
   userSeed: null,
   puzzle: null,
+  marketPuzzle: null,
+  votePuzzle: null,
   products: [],
   cart: [],
   balance: 0,
@@ -57,6 +69,8 @@ const defaultState = {
   transactions: [],
   isAdminUnlocked: false,
   hasDepletedBalance: false,
+  hasWashedCredits: false,
+  isVerifiedSeller: false,
   isTerminalOpen: false,
   terminalCodeMode: false,
 };
@@ -68,9 +82,13 @@ export const useStore = create<StoreState>()(
 
       initializeUser: (seed: string) => {
         const puzzle = generatePuzzle(seed);
+        const marketPuzzle = generateMarketPuzzle(seed);
+        const votePuzzle = generateVotePuzzle(seed);
         set({
           userSeed: seed,
           puzzle,
+          marketPuzzle,
+          votePuzzle,
           products: puzzle.products,
           cart: [],
           balance: puzzle.target, // Start with balance = target
@@ -157,6 +175,24 @@ export const useStore = create<StoreState>()(
         }));
       },
 
+      completeWash: (profit) => {
+        set((state) => ({
+          balance: parseFloat((state.balance + profit).toFixed(2)),
+          hasWashedCredits: true,
+          transactions: [
+            ...state.transactions,
+            {
+              id: uuidv4(),
+              orderId: uuidv4(),
+              productName: 'SLDX Token — The Wash',
+              amount: profit,
+              status: 'Laundered' as const,
+              date: new Date().toISOString(),
+            },
+          ],
+        }));
+      },
+
       checkAdminUnlock: () => {
         const state = get();
         // Check if balance is exactly 0
@@ -165,6 +201,10 @@ export const useStore = create<StoreState>()(
 
       unlockAdmin: () => {
         set({ isAdminUnlocked: true, hasDepletedBalance: true });
+      },
+
+      verifySeller: () => {
+        set({ isVerifiedSeller: true });
       },
 
       setTerminalOpen: (isOpen, codeMode = false) => {
@@ -180,6 +220,8 @@ export const useStore = create<StoreState>()(
         transactions: state.transactions,
         isAdminUnlocked: state.isAdminUnlocked,
         hasDepletedBalance: state.hasDepletedBalance,
+        hasWashedCredits: state.hasWashedCredits,
+        isVerifiedSeller: state.isVerifiedSeller,
       }),
     }
   )

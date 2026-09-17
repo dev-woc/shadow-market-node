@@ -74,6 +74,8 @@ export const OrderHistory = () => {
         return 'text-neon-red';
       case 'Pending':
         return 'text-yellow-500';
+      case 'Laundered':
+        return 'text-primary';
       default:
         return 'text-muted-foreground';
     }

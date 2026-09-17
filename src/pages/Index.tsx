@@ -5,9 +5,12 @@ import { Footer } from '@/components/Footer';
 import { ProductGrid } from '@/components/ProductGrid';
 import { OrderHistory } from '@/components/OrderHistory';
 import { Marketplace } from '@/components/Marketplace';
+import { SellerProgram } from '@/components/SellerProgram';
 import { LoginScreen } from '@/components/LoginScreen';
 import { useStore } from '@/store/useStore';
 import { generatePuzzle } from '@/lib/puzzleGenerator';
+import { generateMarketPuzzle } from '@/lib/marketPuzzleGenerator';
+import { generateVotePuzzle } from '@/lib/votePuzzleGenerator';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('store');
@@ -22,6 +25,8 @@ const Index = () => {
         puzzle: regeneratedPuzzle,
         products: regeneratedPuzzle.products,
         target: regeneratedPuzzle.target,
+        marketPuzzle: generateMarketPuzzle(userSeed),
+        votePuzzle: generateVotePuzzle(userSeed),
       });
     }
   }, [userSeed, puzzle]);
@@ -102,6 +107,18 @@ const Index = () => {
               className="h-full"
             >
               <Marketplace />
+            </motion.div>
+          )}
+
+          {activeTab === 'seller' && (
+            <motion.div
+              key="seller"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full"
+            >
+              <SellerProgram />
             </motion.div>
           )}
         </AnimatePresence>

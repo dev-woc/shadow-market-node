@@ -29,8 +29,25 @@ Players interact with this store to complete missions. Each scenario exploits or
 
 ### Shadow Market
 - [ ] Hidden marketplace (unlocked via Scenario 5)
-- [ ] Rare items with price history (for Scenario 3)
-- [ ] Seller leaderboard (for Scenario 4)
+- [x] Rare items with price history (for Scenario 3) — `Marketplace.tsx` + `marketPuzzleGenerator.ts`
+- [x] Seller leaderboard (for Scenario 4) — `SellerProgram.tsx` + `votePuzzleGenerator.ts`. Note:
+      this is deliberately **not** a visible ranked leaderboard — the UI only shows a raw,
+      unaggregated vote feed, so Majority Element/Boyer-Moore actually has to be applied instead of
+      being read off a pre-counted list. Distinct from Scenario 8's future rich-list leaderboard.
+
+---
+
+## UX Modes
+
+### GUIDED_MODE (`src/lib/config.ts`)
+A single boolean flag, default `false`. When `false` (today), the site plays "open world" — every
+tab is reachable immediately regardless of scenario progress. When flipped to `true`, tabs lock
+behind their narrative prerequisites:
+- **Marketplace** requires `isAdminUnlocked` (Scenario 1's exploit).
+- **Seller Program** requires `hasWashedCredits` (Scenario 3's exploit).
+
+This exists for a possible future guided/tutorial version of the site that enforces scenario
+order — flip the flag rather than rebuilding the gating logic from scratch.
 
 ---
 
