@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, X, Lock, Unlock, AlertCircle } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { verifyKnock } from '@/lib/knockPuzzleGenerator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -11,7 +12,19 @@ interface TerminalModalProps {
 }
 
 export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
-  const { balance, checkAdminUnlock, unlockAdmin, isAdminUnlocked, puzzle, products, target, terminalCodeMode } = useStore();
+  const {
+    balance,
+    checkAdminUnlock,
+    unlockAdmin,
+    isAdminUnlocked,
+    puzzle,
+    products,
+    target,
+    terminalCodeMode,
+    knockPuzzle,
+    unlockShadowMarket,
+    isShadowMarketUnlocked,
+  } = useStore();
   const [commandHistory, setCommandHistory] = useState<string[]>([
     '> SYSTEM STATUS: ACTIVE',
     '> AUTH_MODULE: LOADED',
@@ -19,6 +32,8 @@ export const TerminalModal = ({ isOpen, onClose }: TerminalModalProps) => {
   ]);
   const [currentInput, setCurrentInput] = useState('');
   const [codeMode, setCodeMode] = useState(false);
+  const [knockAttempt, setKnockAttempt] = useState('');
+  const [knockFeedback, setKnockFeedback] = useState<{ ok: boolean; message: string } | null>(null);
   const [userCode, setUserCode] = useState(`// --- USER CODE HERE ---
 // inventory = [{name, price, sku}, ...]
 // target = number (balance to match)
@@ -264,6 +279,18 @@ return null;
     setCurrentInput('');
   };
 
+  const handleKnockSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!knockPuzzle || isShadowMarketUnlocked) return;
+
+    if (verifyKnock(knockPuzzle, knockAttempt)) {
+      unlockShadowMarket();
+      setKnockFeedback({ ok: true, message: "THE DOORS SWING OPEN. SHADOW MARKET UNLOCKED!" });
+    } else {
+      setKnockFeedback({ ok: false, message: 'ACCESS DENIED — SIGNAL MISMATCH' });
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -364,6 +391,41 @@ return null;
                 <span className="text-xs text-muted-foreground font-mono">
                   HINT: Find two items that sum to exactly $1,000.00 to unlock admin access
                 </span>
+              </div>
+            )}
+
+            {/* Secret Knock */}
+            {!codeMode && knockPuzzle && (
+              <div className="px-4 py-3 border-t border-border space-y-2">
+                {isShadowMarketUnlocked ? (
+                  <div className="flex items-center gap-2 text-primary">
+                    <Unlock className="w-3 h-3" />
+                    <span className="text-xs font-mono neon-text">SHADOW MARKET: ACCESS GRANTED</span>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground font-mono">
+                      SIGNAL DETECTED: "<span className="text-primary">{knockPuzzle.displayPhrase}</span>"
+                    </p>
+                    <form onSubmit={handleKnockSubmit} className="flex gap-2">
+                      <Input
+                        type="text"
+                        value={knockAttempt}
+                        onChange={(e) => setKnockAttempt(e.target.value)}
+                        placeholder="enter the phrase..."
+                        className="flex-1 font-mono text-xs"
+                      />
+                      <Button type="submit" className="bg-primary text-primary-foreground text-xs font-mono">
+                        KNOCK
+                      </Button>
+                    </form>
+                    {knockFeedback && (
+                      <p className={`text-xs font-mono ${knockFeedback.ok ? 'text-primary neon-text' : 'text-neon-red'}`}>
+                        {knockFeedback.ok ? '✔' : '⚠'} {knockFeedback.message}
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </motion.div>

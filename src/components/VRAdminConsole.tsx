@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, Maximize2, VolumeX, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { useStore } from '@/store/useStore';
 
 // Import A-Frame (side effects)
 import 'aframe';
@@ -15,6 +16,7 @@ export const VRAdminConsole = ({ isOpen, onClose }: VRAdminConsoleProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const { isShadowMarketUnlocked } = useStore();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -197,7 +199,7 @@ export const VRAdminConsole = ({ isOpen, onClose }: VRAdminConsoleProps) => {
           <a-text position="-0.6 -0.05 0.04" value="[ ] Money Glitch" color="#666666" width="0.85" opacity="0.5" font="monoid"></a-text>
           <a-text position="-0.6 -0.22 0.04" value="[ ] The Wash" color="#666666" width="0.85" opacity="0.5" font="monoid"></a-text>
           <a-text position="-0.6 -0.39 0.04" value="[ ] Bot Swarm" color="#666666" width="0.85" opacity="0.5" font="monoid"></a-text>
-          <a-text position="-0.6 -0.56 0.04" value="[ ] Secret Knock" color="#666666" width="0.85" opacity="0.5" font="monoid"></a-text>
+          <a-text position="-0.6 -0.56 0.04" value="[${isShadowMarketUnlocked ? 'x' : ' '}] Secret Knock" color="${isShadowMarketUnlocked ? '#00FF00' : '#666666'}" width="0.85" opacity="${isShadowMarketUnlocked ? 0.8 : 0.5}" font="monoid"></a-text>
           <a-box
             position="0 0 0.02"
             width="1.45"
@@ -245,7 +247,7 @@ export const VRAdminConsole = ({ isOpen, onClose }: VRAdminConsoleProps) => {
     return () => {
       container.innerHTML = '';
     };
-  }, [isOpen]);
+  }, [isOpen, isShadowMarketUnlocked]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {

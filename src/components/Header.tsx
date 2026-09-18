@@ -13,7 +13,7 @@ interface HeaderProps {
 
 export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { userSeed, resetUser, isAdminUnlocked, hasWashedCredits } = useStore();
+  const { userSeed, resetUser, isAdminUnlocked, hasWashedCredits, isShadowMarketUnlocked } = useStore();
 
   const handleLogout = () => {
     if (confirm('Reset your session? Your progress will be lost.')) {
@@ -26,6 +26,9 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
     { id: 'orders', label: 'ORDER HISTORY' },
     { id: 'marketplace', label: 'MARKETPLACE' },
     { id: 'seller', label: 'SELLER PROGRAM' },
+    // Unlike the tabs above, Shadow Market is a genuine secret, not a visible
+    // roadmap item — it's absent entirely until unlocked, never shown locked.
+    ...(isShadowMarketUnlocked ? [{ id: 'shadowmarket', label: 'SHADOW MARKET' }] : []),
   ];
 
   // GUIDED_MODE is off by default (see src/lib/config.ts) — when enabled, tabs

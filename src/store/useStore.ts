@@ -5,6 +5,7 @@ import { Transaction, generateInitialTransactions } from '@/data/transactions';
 import { generatePuzzle, PuzzleConfig } from '@/lib/puzzleGenerator';
 import { generateMarketPuzzle, MarketPuzzle } from '@/lib/marketPuzzleGenerator';
 import { generateVotePuzzle, VotePuzzleConfig } from '@/lib/votePuzzleGenerator';
+import { generateKnockPuzzle, KnockPuzzle } from '@/lib/knockPuzzleGenerator';
 import { v4 as uuidv4 } from 'uuid';
 
 interface CartItem extends Product {
@@ -17,6 +18,7 @@ interface StoreState {
   puzzle: PuzzleConfig | null;
   marketPuzzle: MarketPuzzle | null;
   votePuzzle: VotePuzzleConfig | null;
+  knockPuzzle: KnockPuzzle | null;
 
   // Store data
   products: Product[];
@@ -28,6 +30,7 @@ interface StoreState {
   hasDepletedBalance: boolean;
   hasWashedCredits: boolean;
   isVerifiedSeller: boolean;
+  isShadowMarketUnlocked: boolean;
 
   // User actions
   initializeUser: (seed: string) => void;
@@ -50,6 +53,9 @@ interface StoreState {
   // Seller Program actions
   verifySeller: () => void;
 
+  // Shadow Market actions
+  unlockShadowMarket: () => void;
+
   // UI Actions
   isTerminalOpen: boolean;
   terminalCodeMode: boolean;
@@ -62,6 +68,7 @@ const defaultState = {
   puzzle: null,
   marketPuzzle: null,
   votePuzzle: null,
+  knockPuzzle: null,
   products: [],
   cart: [],
   balance: 0,
@@ -71,6 +78,7 @@ const defaultState = {
   hasDepletedBalance: false,
   hasWashedCredits: false,
   isVerifiedSeller: false,
+  isShadowMarketUnlocked: false,
   isTerminalOpen: false,
   terminalCodeMode: false,
 };
@@ -84,11 +92,13 @@ export const useStore = create<StoreState>()(
         const puzzle = generatePuzzle(seed);
         const marketPuzzle = generateMarketPuzzle(seed);
         const votePuzzle = generateVotePuzzle(seed);
+        const knockPuzzle = generateKnockPuzzle(seed);
         set({
           userSeed: seed,
           puzzle,
           marketPuzzle,
           votePuzzle,
+          knockPuzzle,
           products: puzzle.products,
           cart: [],
           balance: puzzle.target, // Start with balance = target
@@ -207,6 +217,10 @@ export const useStore = create<StoreState>()(
         set({ isVerifiedSeller: true });
       },
 
+      unlockShadowMarket: () => {
+        set({ isShadowMarketUnlocked: true });
+      },
+
       setTerminalOpen: (isOpen, codeMode = false) => {
         set({ isTerminalOpen: isOpen, terminalCodeMode: codeMode });
       },
@@ -222,6 +236,7 @@ export const useStore = create<StoreState>()(
         hasDepletedBalance: state.hasDepletedBalance,
         hasWashedCredits: state.hasWashedCredits,
         isVerifiedSeller: state.isVerifiedSeller,
+        isShadowMarketUnlocked: state.isShadowMarketUnlocked,
       }),
     }
   )

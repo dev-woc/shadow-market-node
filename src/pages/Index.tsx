@@ -6,11 +6,13 @@ import { ProductGrid } from '@/components/ProductGrid';
 import { OrderHistory } from '@/components/OrderHistory';
 import { Marketplace } from '@/components/Marketplace';
 import { SellerProgram } from '@/components/SellerProgram';
+import { ShadowMarket } from '@/components/ShadowMarket';
 import { LoginScreen } from '@/components/LoginScreen';
 import { useStore } from '@/store/useStore';
 import { generatePuzzle } from '@/lib/puzzleGenerator';
 import { generateMarketPuzzle } from '@/lib/marketPuzzleGenerator';
 import { generateVotePuzzle } from '@/lib/votePuzzleGenerator';
+import { generateKnockPuzzle } from '@/lib/knockPuzzleGenerator';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('store');
@@ -27,6 +29,7 @@ const Index = () => {
         target: regeneratedPuzzle.target,
         marketPuzzle: generateMarketPuzzle(userSeed),
         votePuzzle: generateVotePuzzle(userSeed),
+        knockPuzzle: generateKnockPuzzle(userSeed),
       });
     }
   }, [userSeed, puzzle]);
@@ -119,6 +122,18 @@ const Index = () => {
               className="h-full"
             >
               <SellerProgram />
+            </motion.div>
+          )}
+
+          {activeTab === 'shadowmarket' && (
+            <motion.div
+              key="shadowmarket"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full"
+            >
+              <ShadowMarket />
             </motion.div>
           )}
         </AnimatePresence>

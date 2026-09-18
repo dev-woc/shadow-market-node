@@ -9,6 +9,7 @@ describe("useStore", () => {
       puzzle: null,
       marketPuzzle: null,
       votePuzzle: null,
+      knockPuzzle: null,
       products: [],
       cart: [],
       balance: 1000,
@@ -18,6 +19,7 @@ describe("useStore", () => {
       hasDepletedBalance: false,
       hasWashedCredits: false,
       isVerifiedSeller: false,
+      isShadowMarketUnlocked: false,
       isTerminalOpen: false,
       terminalCodeMode: false,
     });

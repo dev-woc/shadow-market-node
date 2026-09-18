@@ -33,7 +33,10 @@ export function generateMarketPuzzle(userSeed: string): MarketPuzzle {
   // off the same raw seed.
   const random = createSeededRandom(`${userSeed}:wash`);
 
-  const now = new Date();
+  // Fixed anchor, not wall-clock time — the timestamps are flavor for
+  // synthetic historical data, and using real "now" made two calls a
+  // millisecond apart produce different puzzles, breaking determinism.
+  const now = new Date('2024-01-01T00:00:00.000Z');
   const priceHistory: MarketPricePoint[] = [];
   let price = 150 + random() * 50; // Start between 150-200
 
